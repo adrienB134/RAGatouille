@@ -23,6 +23,8 @@ colbert-ai = "0.2.19"
 langchain = "^0.1.0"
 onnx = "^1.15.0"
 srsly = "2.4.8"
+instructor = "^0.6.1"
+
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
