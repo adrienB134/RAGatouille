@@ -157,7 +157,9 @@ class RAGTrainer:
         )
         if len(self.data_processor.training_triplets) == 0:
             if mine_hard_negatives:
-                print("Warning: No training triplets were generated with setting mine_hard_negatives=='True'. This may be due to the data being too small or the hard negative miner not being able to find enough hard negatives.")
+                print(
+                    "Warning: No training triplets were generated with setting mine_hard_negatives=='True'. This may be due to the data being too small or the hard negative miner not being able to find enough hard negatives."
+                )
                 self.data_processor.process_raw_data(
                     data_type=data_type,
                     raw_data=raw_data,
@@ -188,6 +190,7 @@ class RAGTrainer:
         use_relu: bool = False,
         warmup_steps: Union[int, Literal["auto"]] = "auto",
         accumsteps: int = 1,
+        data_directory: Union[str, Path] = None,
     ) -> str:
         """
         Launch training or fine-tuning of a ColBERT model.
@@ -203,10 +206,15 @@ class RAGTrainer:
             warmup_steps: Union[int, Literal["auto"]] - How many warmup steps to use for the learning rate.
                                                       Auto will default to 10% of total steps
             accumsteps: How many gradient accummulation steps to use to simulate higher batch sizes.
+            data_directory: Path - Directory of the training data. Only necessary if not using prepare_data()
 
         Returns:
             model_path: str - Path to the trained model.
         """
+
+        if data_directory:
+            self.data_dir = Path(data_directory)
+
         if not self.training_triplets:
             total_triplets = sum(
                 1 for _ in open(str(self.data_dir / "triples.train.colbert.jsonl"), "r")
