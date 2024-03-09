@@ -121,6 +121,9 @@ class RAGInDomainTrainer:
 
         if use_reranker:
             self.train_rerankers()
+            triples = "./data/distillation.json"
+        else:
+            triples = "./data/triples.train.colbert.jsonl"
 
         # trained_model = RAGTrainer(
         #     model_name=model_name,
@@ -130,7 +133,7 @@ class RAGInDomainTrainer:
         # ).train(data_directory=data, **training_params)
 
         with Run().context(RunConfig(nranks=1)):
-            triples = "./data/distillation.json"
+            triples = triples
             queries = "./data/queries.train.colbert.tsv"
             collection = "./data/corpus.train.colbert.tsv"
 
