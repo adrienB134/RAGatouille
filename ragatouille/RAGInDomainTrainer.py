@@ -17,21 +17,18 @@ from ragatouille.udapdr import reranker_training
 class RAGInDomainTrainer:
     def __init__(
         self,
-        api_key: str,
-        model: str = "gpt-4-0125-preview",
-        max_tokens: int = 2000,
         document_splitter_fn: Optional[Callable] = llama_index_sentence_splitter,
         preprocessing_fn: Optional[Union[Callable, list[Callable]]] = None,
     ):
-        self.api_key = api_key
-        self.model = model
-        self.max_tokens = max_tokens
         self.corpus_processor = CorpusProcessor(document_splitter_fn, preprocessing_fn)
 
     def generate_data(
         self,
         first_stage_corpus,
         second_stage_corpus,
+        api_key: str,
+        first_stage_model: str = "gpt-4-0125-preview",
+        max_tokens: int = 2000,
         second_stage_model: str = "google/flan-t5-small",
         **splitter_kwargs,
     ) -> str:
@@ -58,10 +55,10 @@ class RAGInDomainTrainer:
 
         # TODO Add other LLM providers
         teacher_llm = dspy.OpenAI(
-            model=self.model,
-            max_tokens=self.max_tokens,
+            model=first_stage_model,
+            max_tokens=max_tokens,
             model_type="chat",
-            api_key=self.api_key,
+            api_key=api_key,
         )
 
         dspy.settings.configure(lm=teacher_llm)
@@ -88,7 +85,7 @@ class RAGInDomainTrainer:
             t5_program.forward(doc) for doc in tqdm(second_stage_documents)
         ]
 
-        print("\n#> Preparing reranker data\n")  # TODO To delete or rewrite later
+        print("\n#> Preparing reranker data\n")
         third_stage_trainset = RAGTrainer(
             "udapdr", "colbert-ir/ColBERTv2.0"
         ).prepare_training_data(
@@ -104,12 +101,12 @@ class RAGInDomainTrainer:
     def train(
         self,
         corpus: List[str],
-        model_name: str,
+        # model_name: str,
         pretrained_model_name: str,
         use_reranker: bool = False,
-        training_params: Optional[dict] = dict(),
-        language_code: str = "en",
-        n_usable_gpus: int = -1,
+        # training_params: Optional[dict] = dict(),
+        # language_code: str = "en",
+        # n_usable_gpus: int = -1,
         first_stage_split: int = 2,
         second_stage_split: int = 4,
         second_stage_model: str = "google/flan-t5-small",
