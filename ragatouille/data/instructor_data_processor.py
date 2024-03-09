@@ -1,13 +1,12 @@
+import random
 from typing import Callable, List, Optional, Union
+
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel, Field
 
 from ragatouille.data.corpus_processor import CorpusProcessor
 from ragatouille.data.preprocessors import llama_index_sentence_splitter
-
-import instructor
-import random
-
-from openai import OpenAI
-from pydantic import BaseModel, Field
 
 
 class QueryForPassage(BaseModel):
@@ -24,15 +23,15 @@ class QueryForPassage(BaseModel):
 class InstructorDataProcessor:
     def __init__(
         self,
-        documents: list[str],
         api_key: str,
         model: str = "gpt-4-1106-preview",
+        response_model: BaseModel = QueryForPassage,
         document_splitter_fn: Optional[Callable] = llama_index_sentence_splitter,
         preprocessing_fn: Optional[Union[Callable, list[Callable]]] = None,
     ):
-        self.documents = documents
         self.api_key = api_key
         self.model = model
+        self.response_model = response_model
         self.corpus_processor = CorpusProcessor(document_splitter_fn, preprocessing_fn)
 
     def process_corpus(
@@ -43,7 +42,6 @@ class InstructorDataProcessor:
         num_queries: int = 1,
         **splitter_kwargs,
     ) -> List[List[str]]:
-
         documents = self.corpus_processor.process_corpus(
             documents, document_ids, **splitter_kwargs
         )
@@ -54,7 +52,7 @@ class InstructorDataProcessor:
         for doc in documents:
             candidate = client.chat.completions.create(
                 model=self.model,
-                response_model=QueryForPassage,
+                response_model=self.response_model,
                 messages=[
                     {
                         "role": "system",
@@ -63,7 +61,7 @@ class InstructorDataProcessor:
                     },
                     {"role": "user", "content": doc},
                 ],
-            )
+            )  # type: ignore
             candidate_queries.append(candidate)
 
         pairs = []
