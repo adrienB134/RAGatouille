@@ -9,13 +9,14 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 
-def reranker_training() -> str:
+def reranker_training(
+    model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    train_batch_size: int = 2,
+    num_epochs: int = 1,
+    warmup_steps: int = 5000,
+) -> str:
     print("\n#> Training reranker\n")
 
-    model_name = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-    train_batch_size = 2
-    num_epochs = 1
-    warmup_steps = 5000
     model = CrossEncoder(model_name, num_labels=1, max_length=512)
 
     data_folder = "./data/"
