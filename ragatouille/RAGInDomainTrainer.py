@@ -24,8 +24,8 @@ class RAGInDomainTrainer:
 
     def generate_data(
         self,
-        first_stage_corpus,
-        second_stage_corpus,
+        first_stage_corpus: List[str],
+        second_stage_corpus: List[str],
         api_key: str,
         first_stage_model: str = "gpt-4-0125-preview",
         max_tokens: int = 2000,
